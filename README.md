@@ -5,3 +5,4 @@
 ```
 node server.js 8888
 ```
+# static-server-2
