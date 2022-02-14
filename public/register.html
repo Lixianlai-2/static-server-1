@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>register</title>
+  </head>
+  <body>
+    <form id="registerForm">
+      <div>
+        <label for=""> name<input name="name" type="text" /></label>
+      </div>
+      <div>
+        <label for=""> password<input name="password" type="password" /></label>
+      </div>
+      <div>
+        <button type="submit">注册</button>
+      </div>
+    </form>
+    <!-- 先引入jQuery -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+
+    <!--  -->
+    <script>
+      const $form = $("#registerForm");
+      $form.on("submit", (e) => {
+        console.log(e);
+        // 阻止默认事件
+        e.preventDefault();
+        const name = $form.find("input[name=name]").val();
+        const password = $form.find("input[name=password]").val();
+        $.ajax({
+          method: "post",
+          url: "/register",
+          contentType: "text/json,charset=UTF-8",
+          //   下面是缩写哦
+          data: JSON.stringify({ name, password }),
+          //   data: JSON.stringify({ name:name, password:password }),
+        }).then(
+          (resolve) => {
+            alert("注册成功");
+            window.open("./sign_in.html");
+          },
+          (reject) => {
+            alert("注册失败");
+          }
+        );
+        console.log(name, password);
+      });
+    </script>
+  </body>
+</html>
