@@ -23,7 +23,56 @@ var server = http.createServer(function (request, response) {
 
   console.log("有个傻子发请求过来啦！路径（带查询参数）为：" + pathWithQuery);
 
-  if (path === "/register" && method === "POST") {
+  if (path === "/sign_in" && method === "POST") {
+    response.setHeader("Content-Type", "text/html;charset=utf-8");
+    console.log("这里有运行吗");
+    // JSON.parse() 方法用来解析JSON字符串，构造由字符串描述的JavaScript值或对象。
+    // 把JSON字符串变成数组
+    const userDatabaseArray = JSON.parse(fs.readFileSync("./db/user.json"));
+
+    // 新建一个数组，用来存放数据
+    const array = [];
+
+    // 监听请求上的数据
+    request.on("data", (chunk) => {
+      // 把ajax中的请求中的data数据push到空数组中，这里也就是传输的用户输入的name和password
+      array.push(chunk);
+    });
+
+    // 如果请求结束了
+    request.on("end", () => {
+      // 前面的空数组因为添加了请求中的数据，已经变成了<Buffer数据>
+      // 现在是将Buffer数据变化成JSON字符串，这是Buffer自己提供的方法，无须深究
+      const string = Buffer.concat(array).toString();
+
+      // 然后把JSON字符串变为对象，这里也就是用户输入的数据
+      const userInputObj = JSON.parse(string);
+
+      // find方法是返回符合条件的第一个值，如果没有找到就返回undefined
+      // 这里是在数据库形成的数组中查找有没有跟用户输入的name和password匹配的内容，如果有就代表这个用户已经注册成功，且输入的name和passport内容没有问题
+      const user = userDatabaseArray.find(
+        (user) =>
+          user.name === userInputObj.name &&
+          user.password === userInputObj.password
+      );
+
+      console.log("这里有运行吗");
+
+      console.log("user:" + user);
+
+      // 如果没有找到匹配的name和password
+      if (user === undefined) {
+        // 4开头的都是失败的状态
+        response.statusCode = 400;
+        response.end("你输入的用户名和密码不匹配");
+      } else {
+        // 如果找到了
+        response.statusCode = 200;
+        response.end();
+      }
+    });
+    // response.end("很好");
+  } else if (path === "/register" && method === "POST") {
     response.setHeader("Content-Type", "text/html;charset=utf-8");
     // 新建一个数组，用来存放数据
     const array = [];

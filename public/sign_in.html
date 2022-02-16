@@ -7,6 +7,53 @@
     <title>登录页面</title>
   </head>
   <body>
-    <h1>这个就是注册之后的登录页面了</h1>
+    <form id="signInForm">
+      <div>
+        <label for=""> name<input name="name" type="text" /></label>
+      </div>
+      <div>
+        <label for=""> password<input name="password" type="password" /></label>
+      </div>
+      <div>
+        <button type="submit">登录</button>
+      </div>
+    </form>
+    <!-- 先引入jQuery -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+
+    <!--  -->
+    <script>
+      console.log("这部分有运行吗");
+      const $form = $("#signInForm");
+      $form.on("submit", (e) => {
+        console.log(e);
+        // 阻止默认事件
+        e.preventDefault();
+        const name = $form.find("input[name=name]").val();
+        const password = $form.find("input[name=password]").val();
+        $.ajax({
+          // HTTP 请求方法
+          method: "POST",
+          // 发送请求的地址
+          url: "/sign_in",
+          contentType: "text/json,charset=UTF-8",
+          // 发送到服务器的数据。它被转换成一个查询字符串,如果已经是一个字符串的话就不会转换。
+          data: JSON.stringify({ name, password }),
+          //   data: JSON.stringify({ name:name, password:password }),
+        }).then(
+          // 请求成功时
+          (resolve) => {
+            // alert("登录成功");
+            // location.href = "./sign_in.html";
+            window.open("./sign_in.html");
+          },
+          // 请求失败时
+          (reject) => {
+            console.log("登录失败");
+          }
+        );
+        console.log(name, password);
+      });
+    </script>
   </body>
 </html>
