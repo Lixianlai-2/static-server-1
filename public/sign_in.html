@@ -19,7 +19,7 @@
       </div>
     </form>
     <!-- 先引入jQuery -->
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
     <!--  -->
     <script>
@@ -27,6 +27,7 @@
       const $form = $("#signInForm");
       $form.on("submit", (e) => {
         console.log(e);
+        console.log("sign_in.html里有监听form吗？");
         // 阻止默认事件
         e.preventDefault();
         const name = $form.find("input[name=name]").val();
@@ -35,7 +36,7 @@
           // HTTP 请求方法
           method: "POST",
           // 发送请求的地址
-          url: "/sign_in",
+          url: "/sign_in.html",
           contentType: "text/json,charset=UTF-8",
           // 发送到服务器的数据。它被转换成一个查询字符串,如果已经是一个字符串的话就不会转换。
           data: JSON.stringify({ name, password }),
@@ -45,7 +46,7 @@
           (resolve) => {
             // alert("登录成功");
             // location.href = "./sign_in.html";
-            window.open("./sign_in.html");
+            window.open("./home.html");
           },
           // 请求失败时
           (reject) => {

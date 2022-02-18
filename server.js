@@ -23,7 +23,7 @@ var server = http.createServer(function (request, response) {
 
   console.log("有个傻子发请求过来啦！路径（带查询参数）为：" + pathWithQuery);
 
-  if (path === "/sign_in" && method === "POST") {
+  if (path === "/sign_in.html" && method === "POST") {
     response.setHeader("Content-Type", "text/html;charset=utf-8");
     console.log("这里有运行吗");
     // JSON.parse() 方法用来解析JSON字符串，构造由字符串描述的JavaScript值或对象。
@@ -68,10 +68,27 @@ var server = http.createServer(function (request, response) {
       } else {
         // 如果找到了
         response.statusCode = 200;
+        response.setHeader("Set-Cookie", "loginStatus=1;HttpOnly");
         response.end();
       }
     });
     // response.end("很好");
+  } else if (path === "/home.html") {
+    const cookie = request.headers["cookie"];
+    console.log(cookie);
+    if (cookie === "loginStatus=1") {
+      const homeHtml = fs.readFileSync("./public/home.html").toString();
+      const string = homeHtml.replace(" {{loginStatus}}", "登录成功");
+      response.write(string);
+    } else {
+      const homeHtml = fs.readFileSync("./public/home.html").toString();
+      const string = homeHtml.replace(" {{loginStatus}}", "登录失败");
+      response.write(string);
+    }
+    response.end("响应结束");
+
+    // response.end("web page content");
+    // loginStatus=1
   } else if (path === "/register" && method === "POST") {
     response.setHeader("Content-Type", "text/html;charset=utf-8");
     // 新建一个数组，用来存放数据
