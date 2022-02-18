@@ -23,6 +23,10 @@ var server = http.createServer(function (request, response) {
 
   console.log("有个傻子发请求过来啦！路径（带查询参数）为：" + pathWithQuery);
 
+  // --------------------------------------------------------
+  // 登录页面设置
+  // --------------------------------------------------------
+
   if (path === "/sign_in.html" && method === "POST") {
     response.setHeader("Content-Type", "text/html;charset=utf-8");
     console.log("这里有运行吗");
@@ -68,27 +72,71 @@ var server = http.createServer(function (request, response) {
       } else {
         // 如果找到了
         response.statusCode = 200;
-        response.setHeader("Set-Cookie", "loginStatus=1;HttpOnly");
+        response.setHeader("Set-Cookie", `user_id=${user.id};HttpOnly`);
         response.end();
       }
     });
     // response.end("很好");
+
+    // --------------------------------------------------------
+    // home页面
+    // --------------------------------------------------------
   } else if (path === "/home.html") {
     const cookie = request.headers["cookie"];
-    console.log(cookie);
-    if (cookie === "loginStatus=1") {
+    // const cookieArray = cookie.split(";");
+
+    let userId;
+    try {
+      userId = cookie
+        .split(";")
+        .filter((s) => s.indexOf("user_id=") >= 0)[0]
+        .split("=")[1];
+    } catch (error) {}
+
+    console.log(`userId:` + userId);
+    // console.log(cookieArray);
+    console.log(`这是cookie: ` + cookie);
+    console.log(`typeOf cookie:` + typeof cookie);
+
+    // 如果userId存在,这里是判断cookie里面有没有id
+    if (userId) {
+      const userDatabaseArray = JSON.parse(fs.readFileSync("./db/user.json"));
+
+      const user = userDatabaseArray.find(
+        (obj) => obj.id.toString() === userId
+      );
+
       const homeHtml = fs.readFileSync("./public/home.html").toString();
-      const string = homeHtml.replace(" {{loginStatus}}", "登录成功");
-      response.write(string);
+      // 注意：因为userId是string，所以obj.id.toString()与其保持一致
+
+      console.log("user:" + user);
+      let string;
+      if (user) {
+        console.log("这里进行判断了吗？");
+        string = homeHtml
+          .replace("{{loginStatus}}", "登录成功")
+          .replace("{{user.name}}", user.name);
+        response.write(string);
+      } else {
+        string = homeHtml.replace(" {{loginStatus}}", "登录失败");
+        response.write(string);
+      }
+      console.log("string:" + string);
     } else {
       const homeHtml = fs.readFileSync("./public/home.html").toString();
-      const string = homeHtml.replace(" {{loginStatus}}", "登录失败");
+      string = homeHtml
+        .replace(" {{loginStatus}}", "登录失败")
+        .replace("{{user.name}}", "");
       response.write(string);
     }
     response.end("响应结束");
 
     // response.end("web page content");
     // loginStatus=1
+
+    // --------------------------------------------------------
+    // 注册页面设置
+    // --------------------------------------------------------
   } else if (path === "/register" && method === "POST") {
     response.setHeader("Content-Type", "text/html;charset=utf-8");
     // 新建一个数组，用来存放数据
@@ -131,6 +179,10 @@ var server = http.createServer(function (request, response) {
     });
 
     response.end("很好");
+
+    // --------------------------------------------------------
+    // 其他基本页面设置
+    // --------------------------------------------------------
   } else {
     response.statusCode = 200;
 
