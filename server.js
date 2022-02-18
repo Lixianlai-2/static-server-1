@@ -23,6 +23,10 @@ var server = http.createServer(function (request, response) {
 
   console.log("有个傻子发请求过来啦！路径（带查询参数）为：" + pathWithQuery);
 
+  // 因为很多部分都需要引用
+  // 从文件中读取到session，先将其转化为字符串，然后用JSON.parse将其转化为对象
+  const sessionObj = JSON.parse(fs.readFileSync("./session.json").toString());
+
   // --------------------------------------------------------
   // 登录页面设置
   // --------------------------------------------------------
@@ -72,7 +76,15 @@ var server = http.createServer(function (request, response) {
       } else {
         // 如果找到了
         response.statusCode = 200;
-        response.setHeader("Set-Cookie", `user_id=${user.id};HttpOnly`);
+        const random = Math.random();
+
+        // 对象的随机数属性，等于右边
+        sessionObj[random] = { user_id: user.id };
+
+        // 然后往session.json中写入第二个参数的内容，即将前面的sessionObj转化为字符串，然后写入session.json文件中
+        fs.writeFileSync("./session.json", JSON.stringify(sessionObj));
+
+        response.setHeader("Set-Cookie", `session_id=${random};HttpOnly`);
         response.end();
       }
     });
@@ -85,26 +97,26 @@ var server = http.createServer(function (request, response) {
     const cookie = request.headers["cookie"];
     // const cookieArray = cookie.split(";");
 
-    let userId;
+    // let userId;
+    let sessionId;
     try {
-      userId = cookie
+      sessionId = cookie
         .split(";")
-        .filter((s) => s.indexOf("user_id=") >= 0)[0]
+        .filter((s) => s.indexOf("session_id=") >= 0)[0]
         .split("=")[1];
     } catch (error) {}
 
-    console.log(`userId:` + userId);
+    // console.log(`userId:` + userId);
     // console.log(cookieArray);
     console.log(`这是cookie: ` + cookie);
-    console.log(`typeOf cookie:` + typeof cookie);
+    // console.log(`typeOf cookie:` + typeof cookie);
 
-    // 如果userId存在,这里是判断cookie里面有没有id
-    if (userId) {
+    // 如果sessionId存在,这里是判断cookie里面有没有id
+    if (sessionId && sessionObj[sessionId]) {
+      const userId = sessionObj[sessionId].user_id;
       const userDatabaseArray = JSON.parse(fs.readFileSync("./db/user.json"));
 
-      const user = userDatabaseArray.find(
-        (obj) => obj.id.toString() === userId
-      );
+      const user = userDatabaseArray.find((obj) => obj.id === userId);
 
       const homeHtml = fs.readFileSync("./public/home.html").toString();
       // 注意：因为userId是string，所以obj.id.toString()与其保持一致
@@ -121,7 +133,7 @@ var server = http.createServer(function (request, response) {
         string = homeHtml.replace(" {{loginStatus}}", "登录失败");
         response.write(string);
       }
-      console.log("string:" + string);
+      // console.log("string:" + string);
     } else {
       const homeHtml = fs.readFileSync("./public/home.html").toString();
       string = homeHtml
